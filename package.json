@@ -1,0 +1,20 @@
+{
+  "name": "kiara-realtime-gateway",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Private Gemini Live ephemeral-token gateway for Kiara",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test",
+    "test:redis": "node --test src/projectAdmission.redis.test.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@google/genai": "2.7.0",
+    "dotenv": "16.4.7",
+    "redis": "4.7.1"
+  }
+}
