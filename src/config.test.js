@@ -60,13 +60,17 @@ test('fails production startup when a required setting is missing', () => {
   }
 });
 
-test('requires explicit production settings and rejects insecure Redis and wildcard binding', () => {
+test('requires explicit production settings, TLS Redis, and a safe bind host', () => {
   assert.throws(
     () => loadGatewayConfig(productionEnvironment({ REDIS_URL: 'redis://redis.staging.internal:6379' })),
     /REDIS_URL must use TLS/,
   );
+  assert.equal(
+    loadGatewayConfig(productionEnvironment({ HOST: '0.0.0.0' })).host,
+    '0.0.0.0',
+  );
   assert.throws(
-    () => loadGatewayConfig(productionEnvironment({ HOST: '0.0.0.0' })),
+    () => loadGatewayConfig(productionEnvironment({ HOST: '::' })),
     /HOST must be a private interface address/,
   );
   assert.throws(

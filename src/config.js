@@ -96,8 +96,8 @@ function loadGatewayConfig(environment = process.env) {
 
   const host = environment.HOST || (production ? '' : '127.0.0.1');
   if (!host) throw new Error('HOST is required in production.');
-  if (production && !isPrivateBindHost(host)) {
-    throw new Error('HOST must be a private interface address or private hostname in production.');
+  if (production && host !== '0.0.0.0' && !isPrivateBindHost(host)) {
+    throw new Error('HOST must be a private interface address, private hostname, or 0.0.0.0 in production.');
   }
 
   const port = readInteger(environment, 'PORT', 8080, 1, 65535, production);
