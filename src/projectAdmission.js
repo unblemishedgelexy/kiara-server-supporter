@@ -55,11 +55,11 @@ function createProjectAdmission({
   if (typeof projectId !== 'string' || !projectId.trim()) {
     throw new Error('KIARA_GEMINI_PROJECT_ID is required.');
   }
-  if (!Number.isInteger(maxConcurrent) || maxConcurrent < 1 || maxConcurrent > 100) {
-    throw new Error('KIARA_GATEWAY_MAX_CONCURRENT must be between 1 and 100.');
+  if (!Number.isInteger(maxConcurrent) || maxConcurrent < 1 || maxConcurrent > 500) {
+    throw new Error('KIARA_GATEWAY_MAX_CONCURRENT must be between 1 and 500.');
   }
-  if (!Number.isInteger(requestsPerMinute) || requestsPerMinute < 1 || requestsPerMinute > 100_000) {
-    throw new Error('KIARA_PROJECT_REQUESTS_PER_MINUTE must be between 1 and 100000.');
+  if (!Number.isInteger(requestsPerMinute) || requestsPerMinute < 1 || requestsPerMinute > 1_000_000) {
+    throw new Error('KIARA_PROJECT_REQUESTS_PER_MINUTE must be between 1 and 1000000.');
   }
 
   const projectTag = createHash('sha256').update(projectId.trim()).digest('hex').slice(0, 24);

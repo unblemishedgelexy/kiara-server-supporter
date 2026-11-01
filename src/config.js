@@ -102,10 +102,10 @@ function loadGatewayConfig(environment = process.env) {
 
   const port = readInteger(environment, 'PORT', 8080, 1, 65535, production);
   const maxConcurrent = readInteger(
-    environment, 'KIARA_GATEWAY_MAX_CONCURRENT', 5, 1, 100, production
+    environment, 'KIARA_GATEWAY_MAX_CONCURRENT', 5, 1, 500, production
   );
   const requestsPerMinute = readInteger(
-    environment, 'KIARA_PROJECT_REQUESTS_PER_MINUTE', 60, 1, 100_000, production
+    environment, 'KIARA_PROJECT_REQUESTS_PER_MINUTE', 60, 1, 1_000_000, production
   );
   const quotaCooldownMs = readInteger(
     environment, 'KIARA_PROJECT_QUOTA_COOLDOWN_MS', 60_000, 1000, 24 * 60 * 60 * 1000, production

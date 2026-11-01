@@ -192,11 +192,11 @@ function createGatewayServer({
   if (previousSecret && Buffer.byteLength(previousSecret) < 32) {
     throw new Error('KIARA_GATEWAY_HMAC_PREVIOUS_SECRET must contain at least 32 bytes.');
   }
-  if (!Number.isInteger(maxConcurrent) || maxConcurrent < 1 || maxConcurrent > 100) {
-    throw new Error('KIARA_GATEWAY_MAX_CONCURRENT must be between 1 and 100.');
+  if (!Number.isInteger(maxConcurrent) || maxConcurrent < 1 || maxConcurrent > 500) {
+    throw new Error('KIARA_GATEWAY_MAX_CONCURRENT must be between 1 and 500.');
   }
-  if (!Number.isInteger(requestsPerMinute) || requestsPerMinute < 1 || requestsPerMinute > 100_000) {
-    throw new Error('KIARA_PROJECT_REQUESTS_PER_MINUTE must be between 1 and 100000.');
+  if (!Number.isInteger(requestsPerMinute) || requestsPerMinute < 1 || requestsPerMinute > 1_000_000) {
+    throw new Error('KIARA_PROJECT_REQUESTS_PER_MINUTE must be between 1 and 1000000.');
   }
   if (!Number.isInteger(quotaCooldownMs) || quotaCooldownMs < 1000 || quotaCooldownMs > 24 * 60 * 60 * 1000) {
     throw new Error('KIARA_PROJECT_QUOTA_COOLDOWN_MS must be between 1000 and 86400000.');
@@ -404,6 +404,18 @@ function createGatewayServer({
         console.error('[LIVE_GATEWAY_PROVIDER_FAILURE]', JSON.stringify({
           errorCode: responseCode,
           statusCode: classified.statusCode,
+          providerErrorName: typeof error?.name === 'string'
+            ? error.name.slice(0, 80)
+            : null,
+          providerErrorCode: typeof error?.code === 'string'
+            ? error.code.slice(0, 80)
+            : null,
+          providerCauseName: typeof error?.cause?.name === 'string'
+            ? error.cause.name.slice(0, 80)
+            : null,
+          providerCauseCode: typeof error?.cause?.code === 'string'
+            ? error.cause.code.slice(0, 80)
+            : null,
         }));
         if (!response.destroyed) {
           sendJson(response, statusCode, {

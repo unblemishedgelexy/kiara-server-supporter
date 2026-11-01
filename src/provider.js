@@ -61,6 +61,7 @@ function createGeminiTokenProvider({
   return async function createToken(payload, signal) {
     const skipped = new Set();
     const maxSlots = Math.min(credentials.count, CREDENTIAL_SLOT_COUNT);
+    let invalidCredentialError = null;
 
     while (skipped.size < maxSlots) {
       const credential = credentials.getNext(skipped);
@@ -69,6 +70,10 @@ function createGeminiTokenProvider({
       const disabled = await redis.get(disabledKey(credential));
       if (disabled) {
         skipped.add(credential.fingerprint);
+        invalidCredentialError = Object.assign(
+          new Error('Configured Gemini credential was rejected.'),
+          { code: 'PROVIDER_INVALID_CREDENTIAL', statusCode: 502 },
+        );
         continue;
       }
 
@@ -93,13 +98,15 @@ function createGeminiTokenProvider({
         await redis.set(disabledKey(credential), '1', {
           EX: DISABLED_CREDENTIAL_TTL_SECONDS,
         });
-        const invalidCredentialError = new Error('Configured Gemini credential was rejected.');
-        invalidCredentialError.code = 'PROVIDER_INVALID_CREDENTIAL';
-        invalidCredentialError.statusCode = 502;
-        throw invalidCredentialError;
+        invalidCredentialError = Object.assign(
+          new Error('Configured Gemini credential was rejected.'),
+          { code: 'PROVIDER_INVALID_CREDENTIAL', statusCode: 502 },
+        );
+        skipped.add(credential.fingerprint);
       }
     }
 
+    if (invalidCredentialError) throw invalidCredentialError;
     const error = new Error('No enabled Gemini credentials are available.');
     error.code = 'NO_VALID_GEMINI_CREDENTIALS';
     error.statusCode = 503;

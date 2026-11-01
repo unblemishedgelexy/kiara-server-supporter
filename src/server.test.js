@@ -552,7 +552,7 @@ test('requires a valid key in every enabled slot and rejects duplicate credentia
   );
 });
 
-test('disables a rejected key without retrying and never switches keys on project quota errors', async () => {
+test('disables a rejected key and retries the next credential without switching on project quota errors', async () => {
   const credentials = createCredentialPool({
     GEMINI_API_KEY_1: `AIza${'A'.repeat(30)}`,
     GEMINI_API_KEY_2: `AIza${'B'.repeat(30)}`,
@@ -574,12 +574,11 @@ test('disables a rejected key without retrying and never switches keys on projec
       },
     }),
   });
-  await assert.rejects(
-    invalidKeyIssuer(makePayload(), new AbortController().signal),
-    { code: 'PROVIDER_INVALID_CREDENTIAL', statusCode: 502 },
-  );
-  assert.equal(attemptedKeys.length, 1);
+  const token = await invalidKeyIssuer(makePayload(), new AbortController().signal);
+  assert.equal(token.name, 'valid-token');
+  assert.equal(attemptedKeys.length, 2);
   assert.equal(attemptedKeys[0].endsWith('A'.repeat(30)), true);
+  assert.equal(attemptedKeys[1].endsWith('B'.repeat(30)), true);
 
   const nextRequestIssuer = createGeminiTokenProvider({
     credentials: createCredentialPool({
@@ -596,10 +595,8 @@ test('disables a rejected key without retrying and never switches keys on projec
       },
     }),
   });
-  const token = await nextRequestIssuer(makePayload(), new AbortController().signal);
-  assert.equal(token.name, 'valid-token');
-  assert.equal(attemptedKeys.length, 2);
-  assert.equal(attemptedKeys[1].endsWith('B'.repeat(30)), true);
+  const nextToken = await nextRequestIssuer(makePayload(), new AbortController().signal);
+  assert.equal(nextToken.name, 'valid-token');
   assert.equal(
     [...redis.values.keys()].some((key) => key.startsWith('kiara:live-gateway:credential-disabled:1:')),
     true,
